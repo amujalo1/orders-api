@@ -11,20 +11,20 @@ import (
 
 type App struct {
 	router http.Handler
-	rdb    *redis.Client 
+	rdb    *redis.Client
 }
 
 func New() *App {
-	app := &App {
-		router: loadRoutes(),
-		rdb:    redis.NewClient(&redis.Options{}),
+	app := &App{
+		rdb: redis.NewClient(&redis.Options{}),
 	}
+	app.loadRoutes()
 	return app
 }
 
 func (a *App) Start(ctx context.Context) error {
-	server:= &http.Server{
-		Addr: ":3000",
+	server := &http.Server{
+		Addr:    ":3000",
 		Handler: a.router,
 	}
 	err := a.rdb.Ping(ctx).Err()
@@ -49,13 +49,16 @@ func (a *App) Start(ctx context.Context) error {
 		}
 		close(ch)
 	}()
+
 	select {
-		case err = <-ch: // blokira kod exec do ne dobije vrj ili se kaanl zatvori
-			return err
-		case <-ctx.Done():
-			timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
-			defer cancel()
-			return server.Shutdown(timeout) // kad bi koristili context.Background() shutdown bi mogao raditi bezkonacno
+	case err = <-ch: // blokira kod exec do ne dobije vrj ili se kaanl zatvori
+		return err
+	case <-ctx.Done():
+		timeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		defer cancel()
+		return server.Shutdown(
+			timeout,
+		) // kad bi koristili context.Background() shutdown bi mogao raditi bezkonacno
 	}
 
 }

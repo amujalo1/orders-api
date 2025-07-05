@@ -43,12 +43,12 @@ func (r *RedisRepo) Insert(ctx context.Context, order model.Order) error {
 	}
 
 	return nil
-} 
+}
 
 var ErrNotExist = errors.New("order does not exist")
 
 func (r *RedisRepo) FindByID(ctx context.Context, id uint64) (model.Order, error) {
-	key :=orderIDKey(id)
+	key := orderIDKey(id)
 	value, err := r.Client.Get(ctx, key).Result()
 
 	if errors.Is(err, redis.Nil) {
@@ -148,6 +148,7 @@ func (r *RedisRepo) FindAll(ctx context.Context, page FindAllPage) (FindResult, 
 
 		orders[i] = order
 	}
+
 	return FindResult{
 		Orders: orders,
 		Cursor: cursor,
