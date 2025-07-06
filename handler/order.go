@@ -113,7 +113,7 @@ func (o *Order) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	order, err := o.Repo.FindByID(r.Context(), ID)
+	h, err := o.Repo.FindByID(r.Context(), orderID)
 	if errors.Is(err, order.ErrNotExist) {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -123,7 +123,7 @@ func (o *Order) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := json.NewEncoder(w).Encode(o); err != nil {
+	if err := json.NewEncoder(w).Encode(h); err != nil {
 		fmt.Println("Failed to marshal:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -211,7 +211,7 @@ func (o *Order) DeleteByID(w http.ResponseWriter, r *http.Request) {
 
 	err = o.Repo.DeleteByID(r.Context(), orderID)
 
-	if errors.Is(err, order.ErrorNotExist) {
+	if errors.Is(err, order.ErrNotExist) {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	} else if err != nil {
